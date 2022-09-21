@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class Account {
 
-    public int minimumBalance;
+    public double minimumBalance;
 
     @Generated()
     private String accountId;

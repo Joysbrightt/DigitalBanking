@@ -1,10 +1,12 @@
 package com.Joysbright.digiBank.repository;
 
 import com.Joysbright.digiBank.model.Account;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class AccountRepositoryImpl implements AccountRepository {
 
     List<Account> accountList = new ArrayList<>();
@@ -33,6 +35,16 @@ public class AccountRepositoryImpl implements AccountRepository {
     public  Account save(Account account) {
         accountList.add(account);
         return account;
+    }
+
+    @Override
+    public Account findByAccountPassword(Account password) {
+
+        for (int i = 0; i <accountList.size() ; i++) {
+            accountList.add(password);
+            ;
+        }
+        return null;
     }
 
     @Override

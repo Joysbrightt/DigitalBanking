@@ -1,15 +1,11 @@
 package com.Joysbright.digiBank.service;
 
-import com.Joysbright.digiBank.dtos.request.AccountDepositRequest;
-import com.Joysbright.digiBank.dtos.request.AccountQuerryRequest;
-import com.Joysbright.digiBank.dtos.request.AccountRequest;
-import com.Joysbright.digiBank.dtos.request.AccountWithdrawRequest;
-import com.Joysbright.digiBank.dtos.response.AccountDepositResponse;
-import com.Joysbright.digiBank.dtos.response.AccountQuerryResponse;
-import com.Joysbright.digiBank.dtos.response.AccountResponse;
-import com.Joysbright.digiBank.dtos.response.AccountWithdrawResponse;
+import com.Joysbright.digiBank.dtos.request.*;
+import com.Joysbright.digiBank.dtos.response.*;
 import com.Joysbright.digiBank.model.Account;
 import com.Joysbright.digiBank.model.Transaction;
+
+import java.util.List;
 
 public interface AccountService {
 
@@ -18,6 +14,17 @@ public interface AccountService {
     AccountDepositResponse deposit(AccountDepositRequest depositRequest);
     AccountWithdrawResponse withdraw(AccountWithdrawRequest request);
     AccountResponse createUser(AccountRequest request);
-    AccountQuerryResponse querryAccount(AccountQuerryRequest querryRequest);
+    AccountQuerryResponse querryAccount(String accountNo, AccountQuerryRequest querryRequest);
      AccountResponse anotherCreate(AccountRequest request);
+
+    Account findAccountByAccountName(String accountName);
+
+    Account findByAccountNo(String accountNo);
+
+
+    List<Transaction> getAccountStatement(String accountNo);
+
+    UserTransferResponse transfer(UserTransferRequest transferRequest);
+
+    AccountLoginResponse accountLogin(AccountRequestLogin requestLogin);
 }

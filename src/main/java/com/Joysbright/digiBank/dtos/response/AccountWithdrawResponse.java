@@ -1,14 +1,12 @@
 package com.Joysbright.digiBank.dtos.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class AccountWithdrawResponse {
      private String message;
      private boolean isSuccessful;

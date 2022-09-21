@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Builder
 
 public class User {
 
@@ -27,6 +27,9 @@ public class User {
     @NonNull
     @NotBlank
     private  String phoneNo;
+    @NonNull
+    @NotBlank
+    private  String password;
 
-    private List<Account> accountList;
+    private Account account;
 }

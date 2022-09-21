@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class AccountQuerryRequest {
-    String accountNo;
+    String password;
 }

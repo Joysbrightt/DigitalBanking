@@ -5,9 +5,10 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class RegisterUserResponse {
+@AllArgsConstructor
+public class ApiErrorResponse {
     private String message;
-    private String firstName;
+    private int StatusCode;
+    private boolean isSuccess;
 }

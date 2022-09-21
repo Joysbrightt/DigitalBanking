@@ -1,13 +1,7 @@
 package com.Joysbright.digiBank.service;
 
-import com.Joysbright.digiBank.dtos.request.AccountDepositRequest;
-import com.Joysbright.digiBank.dtos.request.AccountQuerryRequest;
-import com.Joysbright.digiBank.dtos.request.AccountRequest;
-import com.Joysbright.digiBank.dtos.request.AccountWithdrawRequest;
-import com.Joysbright.digiBank.dtos.response.AccountDepositResponse;
-import com.Joysbright.digiBank.dtos.response.AccountQuerryResponse;
-import com.Joysbright.digiBank.dtos.response.AccountWithdrawResponse;
-import com.Joysbright.digiBank.dtos.response.AccountResponse;
+import com.Joysbright.digiBank.dtos.request.*;
+import com.Joysbright.digiBank.dtos.response.*;
 import com.Joysbright.digiBank.exceptionClass.BankException;
 import com.Joysbright.digiBank.model.Account;
 import com.Joysbright.digiBank.model.Transaction;
@@ -20,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.List;
 
 import static java.math.BigDecimal.valueOf;
 
@@ -40,8 +35,8 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDepositResponse deposit(AccountDepositRequest depositRequest) {
         Account account = accountRepository.findByAccountNo(depositRequest.getAccountNo());
-        if (!account.getAccountNo().equals(depositRequest.getAccountNo())) throw new BankException("invalid account details");
-        if (depositRequest.getAmount() > 10000000 || depositRequest.getAmount() < 1) throw new BankException("deposit amount cannot be less than 1 or greater than 1000000");
+        if (!account.getAccountNo().equals(depositRequest.getAccountNo())) throw new BankException("invalid account details", 404);
+        if (depositRequest.getAmount() > 10000000 || depositRequest.getAmount() < 1) throw new BankException("deposit amount cannot be less than 1 or greater than 1000000", 401);
         BigDecimal balance = account.getBalance().add(BigDecimal.valueOf(depositRequest.getAmount()));
         account.setBalance(balance);
 
@@ -65,13 +60,13 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountWithdrawResponse withdraw(AccountWithdrawRequest request ) {
         Account account = accountRepository.findByAccountId(request.getAccountNo());
-        if (!account.getAccountNo().equals(request.getAccountNo())) throw new BankException("account doesn't exist");
-        if (request.getAmount() < 1) throw new BankException("withdrawal amount cannot be less than 1");
+        if (!account.getAccountNo().equals(request.getAccountNo())) throw new BankException("account doesn't exist",404);
+        if (request.getAmount() < 1) throw new BankException("withdrawal amount cannot be less than 1", 401);
         if (account.getBalance().compareTo(valueOf(request.getAmount())) < 0) {
-              throw new BankException("please enter a valid amount");
+              throw new BankException("please enter a valid amount", 404);
           }
 
-          if (!account.getPassword().equals(request.getPassword())) throw new BankException("incorrect password");
+          if (!account.getPassword().equals(request.getPassword())) throw new BankException("incorrect password", 404);
 
         BigDecimal balance = account.getBalance().subtract(BigDecimal.valueOf(request.getAmount()));
         account.setBalance(balance);
@@ -97,10 +92,10 @@ public class AccountServiceImpl implements AccountService {
     public AccountResponse createUser(AccountRequest request) {
         Account account = new Account();
         SecureRandom secureRandom;
-        if (account.getAccountName().equals(request.getAccountName())) throw new BankException("account already exist");
+        if (account.getAccountName().equals(request.getAccountName())) throw new BankException("account already exist",400);
         secureRandom = new SecureRandom();
 //        valid account has initial deposit of 500 before opening account
-        if (account.minimumBalance < 500 || account.minimumBalance > 1000000) throw new BankException("account cannot be less than 500 or greater than 1000000");
+        if (account.minimumBalance < 500 || account.minimumBalance > 1000000) throw new BankException("account cannot be less than 500 or greater than 1000000", 401);
         String accountNo = String.valueOf(secureRandom.nextInt(764890976));
            account.setAccountNo(accountNo);
            account.setAccountName(request.getAccountName());
@@ -116,11 +111,12 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public AccountQuerryResponse querryAccount(AccountQuerryRequest querryRequest) {
-        Account account = accountRepository.findByAccountNo(querryRequest.getAccountNo());
+    public AccountQuerryResponse querryAccount(String accountNo, AccountQuerryRequest querryRequest) {
+        Account account = accountRepository.findByAccountNo(accountNo);
 //        if account is null throw exception
-        if (account.getAccountNo().equals(null)) throw new BankException("account doesn't exist");
+        if (account.getAccountNo().equals(null)) throw new BankException("account doesn't exist", 404);
 
+        if (!account.getPassword().equals(querryRequest.getPassword())) throw new BankException("invalid query details", 400);
 
         return AccountQuerryResponse.builder()
                 .account(account)
@@ -140,6 +136,74 @@ public class AccountServiceImpl implements AccountService {
                         .build();
 
         return new AccountResponse();
+    }
+
+    @Override
+    public Account findAccountByAccountName(String accountName) {
+        return accountRepository.findByAccountName(accountName);
+    }
+
+    @Override
+    public Account findByAccountNo(String accountNo) {
+        return accountRepository.findByAccountNo(accountNo);
+    }
+
+    @Override
+    public List<Transaction> getAccountStatement(String accountNo) {
+        Account account = accountRepository.findByAccountNo(accountNo);
+        if (!account.getAccountNo().equals(accountNo)) throw new BankException("incorrect user details", 404);
+        return account.getTransactionList();
+    }
+
+    @Override
+    public UserTransferResponse transfer(UserTransferRequest transferRequest) {
+        Account senderAccount = accountRepository.findByAccountNo(transferRequest.getSenderAccountNo());
+        if(senderAccount == null ){
+            throw new BankException("Account does not exist", 404);
+        }
+        Account receiverAccount = accountRepository.findByAccountNo(transferRequest.getReceiverAccountNo());
+        if(receiverAccount == null){
+            throw new BankException("Account does not exist", 400);
+        }
+        if (senderAccount.getBalance().subtract(BigDecimal.valueOf(transferRequest.getAmountToSend())).compareTo(BigDecimal.valueOf(500)) >= 0) throw new BankException("insufficient balance",404);
+
+        if(!senderAccount.getPassword().equals(transferRequest.getSenderAccountPassword())){
+            throw new BankException("Incorrect details", 404);
+        }
+            AccountDepositRequest accountDepositRequest = AccountDepositRequest.builder()
+                    .accountNo(transferRequest.getReceiverAccountNo())
+                    .amount(transferRequest.getAmountToSend())
+                    .build();
+
+        AccountWithdrawRequest accountWithdrawRequest = AccountWithdrawRequest.builder()
+                                    .accountNo(transferRequest.getSenderAccountNo())
+                                    .amount(transferRequest.getAmountToSend())
+                                    .password(transferRequest.getSenderAccountPassword())
+                                    .build();
+        deposit(accountDepositRequest);
+        withdraw(accountWithdrawRequest);
+
+        UserTransferResponse userTransferResponse = UserTransferResponse.builder()
+                .message("you have successfully transfer " + transferRequest.getAmountToSend()+
+                        " to" +transferRequest.getReceiverAccountNo())
+                .isSuccessful(true)
+                .statusCode(200)
+                .build();
+        return userTransferResponse;
+    }
+
+    @Override
+    public AccountLoginResponse accountLogin(AccountRequestLogin requestLogin) {
+        Account account = accountRepository.findByAccountId(requestLogin.getAccountId());
+        if (!account.getPassword().equals(requestLogin.getPassword())) throw new BankException("incorrect user details", 404);
+        account.setAccountNo(requestLogin.getAccountNumber());
+        account.setPassword(requestLogin.getPassword());
+
+        AccountLoginResponse loginResponse = AccountLoginResponse.builder()
+                .accessToken("Account logged successfully")
+                .success(true)
+                .build();
+        return loginResponse;
     }
 
 }

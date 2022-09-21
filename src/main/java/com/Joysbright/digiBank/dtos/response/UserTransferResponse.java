@@ -1,15 +1,20 @@
 package com.Joysbright.digiBank.dtos.response;
 
+
 import com.Joysbright.digiBank.model.Account;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class UserLoginResponse {
+public class  UserTransferResponse {
+
     private String message;
-    private Account account;
+    private int statusCode;
+    private boolean isSuccessful;
 
 }

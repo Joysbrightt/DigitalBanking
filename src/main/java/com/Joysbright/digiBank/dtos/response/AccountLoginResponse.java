@@ -2,12 +2,12 @@ package com.Joysbright.digiBank.dtos.response;
 
 import lombok.*;
 
-@Getter
 @Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterUserResponse {
-    private String message;
-    private String firstName;
+public class AccountLoginResponse {
+    boolean success;
+    String accessToken;
 }
