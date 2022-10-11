@@ -2,6 +2,8 @@ package com.Joysbright.digiBank.dtos.request;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -11,6 +13,6 @@ public class AccountRequest {
 
     private String accountName;
     private String password;
-    private double initialDeposit;
+    private BigDecimal initialDeposit;
 
 }

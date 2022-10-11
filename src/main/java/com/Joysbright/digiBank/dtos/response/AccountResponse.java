@@ -12,8 +12,10 @@ public class AccountResponse {
 
   private int statusCode;
   private boolean isSuccess;
-    private String message;
-
+  private String message;
+  private String firstName;
+  private String lastName;
+  private String accountNo;
 
 
 }

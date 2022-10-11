@@ -7,6 +7,7 @@ import com.Joysbright.digiBank.model.Account;
 import com.Joysbright.digiBank.model.Transaction;
 import com.Joysbright.digiBank.model.Transactiontype;
 import com.Joysbright.digiBank.repository.AccountRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class AccountServiceImpl implements AccountService {
     private AccountRepository accountRepository;
     private static int transactionIdCounter;
     private static  int accountId;
+    private int accountNumber = 10001;
 
     public AccountServiceImpl(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
@@ -36,8 +38,9 @@ public class AccountServiceImpl implements AccountService {
     public AccountDepositResponse deposit(AccountDepositRequest depositRequest) {
         Account account = accountRepository.findByAccountNo(depositRequest.getAccountNo());
         if (!account.getAccountNo().equals(depositRequest.getAccountNo())) throw new BankException("invalid account details", 404);
-        if (depositRequest.getAmount() > 10000000 || depositRequest.getAmount() < 1) throw new BankException("deposit amount cannot be less than 1 or greater than 1000000", 401);
-        BigDecimal balance = account.getBalance().add(BigDecimal.valueOf(depositRequest.getAmount()));
+        if (depositRequest.getAmount().compareTo(BigDecimal.valueOf(1000000)) >= 1 || depositRequest.getAmount().compareTo(BigDecimal.valueOf(500)) <= -1) throw new BankException("deposit amount cannot be less than 1 or greater than 1000000", 401);
+//        Account.builder().accountNo(depositRequest.getAccountNo()).build();
+        BigDecimal balance = account.getBalance().add(depositRequest.getAmount());
         account.setBalance(balance);
 
         Transaction transaction = Transaction.builder()
@@ -59,16 +62,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountWithdrawResponse withdraw(AccountWithdrawRequest request ) {
-        Account account = accountRepository.findByAccountId(request.getAccountNo());
+        Account account = accountRepository.findByAccountNo(request.getAccountNo());
         if (!account.getAccountNo().equals(request.getAccountNo())) throw new BankException("account doesn't exist",404);
-        if (request.getAmount() < 1) throw new BankException("withdrawal amount cannot be less than 1", 401);
-        if (account.getBalance().compareTo(valueOf(request.getAmount())) < 0) {
+        if (request.getAmount().compareTo(BigDecimal.valueOf(500)) <= -1) throw new BankException("withdrawal amount cannot be less than 500", 401);
+        if (account.getBalance().subtract(request.getAmount()).compareTo(BigDecimal.valueOf(500)) <= -1 ) {
               throw new BankException("please enter a valid amount", 404);
           }
 
           if (!account.getPassword().equals(request.getPassword())) throw new BankException("incorrect password", 404);
 
-        BigDecimal balance = account.getBalance().subtract(BigDecimal.valueOf(request.getAmount()));
+        BigDecimal balance = account.getBalance().subtract(request.getAmount());
         account.setBalance(balance);
         Transaction transaction = Transaction.builder()
                 .transactionType(Transactiontype.DEPOSIT)
@@ -81,7 +84,7 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(account);
         AccountWithdrawResponse withdrawResponse = new AccountWithdrawResponse();
         withdrawResponse.setResponseCode(200);
-        withdrawResponse.setMessage("you have successfully withdraw" +request.getAmount());
+        withdrawResponse.setMessage("you have successfully withdraw " +request.getAmount());
         withdrawResponse.setSuccessful(true);
 
         return withdrawResponse;
@@ -89,22 +92,25 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public AccountResponse createUser(AccountRequest request) {
-        Account account = new Account();
+    public AccountResponse createAccount(AccountRequest request) {
+        Account account = accountRepository.findByAccountName(request.getAccountName());
         SecureRandom secureRandom;
-        if (account.getAccountName().equals(request.getAccountName())) throw new BankException("account already exist",400);
+        if (account != null) {throw new BankException("account already exist",400);
+        }
         secureRandom = new SecureRandom();
+        account = new Account();
 //        valid account has initial deposit of 500 before opening account
-        if (account.minimumBalance < 500 || account.minimumBalance > 1000000) throw new BankException("account cannot be less than 500 or greater than 1000000", 401);
-        String accountNo = String.valueOf(secureRandom.nextInt(764890976));
+        if (request.getInitialDeposit().compareTo(BigDecimal.valueOf(500)) <= -1 || request.getInitialDeposit().compareTo(BigDecimal.valueOf(1000000)) >= 1) throw new BankException("account cannot be less than 500 or greater than 1000000", 401);
+        int accountNumber = this.accountNumber++;
+        String accountNo = String.valueOf(accountNumber);
            account.setAccountNo(accountNo);
            account.setAccountName(request.getAccountName());
 //           generating account by incrementing it
             account.setAccountId(String.valueOf(++accountId));
             account.setPassword(request.getPassword());
-            Account savedAccount = accountRepository.save(account);
+            accountRepository.save(account);
             AccountResponse response = new AccountResponse();
-            response.setMessage(savedAccount.getAccountName()+ "account created successfully");
+            response.setMessage(account.getAccountName()+ " account created successfully");
         return response;
     }
 
@@ -135,10 +141,12 @@ public class AccountServiceImpl implements AccountService {
                         .accountId(request.getAccountName())
                         .build();
 
+
         return new AccountResponse();
     }
 
     @Override
+
     public Account findAccountByAccountName(String accountName) {
         return accountRepository.findByAccountName(accountName);
     }
@@ -165,7 +173,7 @@ public class AccountServiceImpl implements AccountService {
         if(receiverAccount == null){
             throw new BankException("Account does not exist", 400);
         }
-        if (senderAccount.getBalance().subtract(BigDecimal.valueOf(transferRequest.getAmountToSend())).compareTo(BigDecimal.valueOf(500)) >= 0) throw new BankException("insufficient balance",404);
+        if (senderAccount.getBalance().subtract(transferRequest.getAmountToSend()).compareTo(BigDecimal.valueOf(500)) <= -1) throw new BankException("insufficient balance",404);
 
         if(!senderAccount.getPassword().equals(transferRequest.getSenderAccountPassword())){
             throw new BankException("Incorrect details", 404);
@@ -201,7 +209,9 @@ public class AccountServiceImpl implements AccountService {
 
         AccountLoginResponse loginResponse = AccountLoginResponse.builder()
                 .accessToken("Account logged successfully")
-                .success(true)
+                .isSuccess(true)
+                .message("welcome back " +accountRepository.findByAccountName(account.getAccountName()))
+                .statusCode(201)
                 .build();
         return loginResponse;
     }

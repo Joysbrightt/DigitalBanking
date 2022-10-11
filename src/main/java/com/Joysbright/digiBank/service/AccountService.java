@@ -13,7 +13,7 @@ public interface AccountService {
 
     AccountDepositResponse deposit(AccountDepositRequest depositRequest);
     AccountWithdrawResponse withdraw(AccountWithdrawRequest request);
-    AccountResponse createUser(AccountRequest request);
+    AccountResponse createAccount(AccountRequest request);
     AccountQuerryResponse querryAccount(String accountNo, AccountQuerryRequest querryRequest);
      AccountResponse anotherCreate(AccountRequest request);
 

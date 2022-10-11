@@ -44,7 +44,7 @@ public class BankServiceImpl implements BankService{
                 .password(userRequest.getPassword())
                 .initialDeposit(userRequest.getInitialDeposit())
                 .build();
-        accountService.createUser(accountRequest);
+        accountService.createAccount(accountRequest);
          Account account = accountService.findAccountByAccountName(accountRequest.getAccountName());
                 user.setAccount(account);
         User saved = bankRepository.save(user);

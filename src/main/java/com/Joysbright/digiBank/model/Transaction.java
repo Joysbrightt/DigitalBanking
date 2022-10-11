@@ -22,7 +22,7 @@ public class Transaction {
     private String narration;
     @NotBlank
     @NonNull
-    private double amount;
+    private BigDecimal amount;
     @NotBlank
     @NonNull
     private Transactiontype transactionType;

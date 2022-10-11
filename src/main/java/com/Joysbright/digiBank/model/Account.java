@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -28,7 +29,7 @@ public class Account {
     @NotBlank
     private String password;
 
-    private BigDecimal balance;
+    private BigDecimal balance = BigDecimal.ZERO;
 
-    private List<Transaction> transactionList;
+    private List<Transaction> transactionList = new ArrayList<>();
 }

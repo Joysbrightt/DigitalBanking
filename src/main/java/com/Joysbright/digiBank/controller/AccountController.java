@@ -26,29 +26,29 @@ public class AccountController {
         return new ResponseEntity<>(accountQuerryResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/{accountNo}")
+    @GetMapping("/getAccountStatement/{accountNo}")
     public ResponseEntity<?> getAccountStatement(@PathVariable("accountNo") String accountNo) {
         List<Transaction> transactionList = accountService.getAccountStatement(accountNo);
-        return new ResponseEntity<>(accountNo, HttpStatus.FOUND);
+        return new ResponseEntity<>(transactionList, HttpStatus.FOUND);
     }
 
-    @PostMapping("/{deposit}")
-    public ResponseEntity<?> accountDeposit( @PathVariable("deposit") @RequestBody AccountDepositRequest depositRequest) {
+    @PostMapping("/deposit")
+    public ResponseEntity<?> accountDeposit(@RequestBody AccountDepositRequest depositRequest) {
         AccountDepositResponse depositResponse = accountService.deposit(depositRequest);
         return  new ResponseEntity<>(depositResponse, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{withdraw}")
-    public ResponseEntity<?> accountWithdraw(@PathVariable("withdraw") @RequestBody AccountWithdrawRequest withdrawRequest){
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> accountWithdraw( @RequestBody AccountWithdrawRequest withdrawRequest){
         AccountWithdrawResponse withdrawResponse = accountService.withdraw(withdrawRequest);
 
         return new ResponseEntity<>(withdrawResponse, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{createAccount}")
-    public ResponseEntity<?> createUserAccount( @PathVariable("createAccount") AccountRequest createAccount){
+    @PostMapping("/createAccount")
+    public ResponseEntity<?> createUserAccount( @RequestBody AccountRequest createAccount){
 
-        AccountResponse accountResponse = accountService.createUser(createAccount);
+        AccountResponse accountResponse = accountService.createAccount(createAccount);
         return new ResponseEntity<>(accountResponse, HttpStatus.CREATED);
     }
 
@@ -58,8 +58,8 @@ public class AccountController {
         return new ResponseEntity<>(accounts, HttpStatus.FOUND);
     }
 
-@PostMapping("/{accountLogin}")
-    public ResponseEntity<?> accountLogin(@PathVariable("accountLogin") @RequestBody AccountRequestLogin requestLogin){
+@PostMapping("/accountLogin")
+    public ResponseEntity<?> accountLogin(@RequestBody AccountRequestLogin requestLogin){
 
     AccountLoginResponse loginResponse = accountService.accountLogin(requestLogin);
     return new ResponseEntity<>(loginResponse, HttpStatus.CREATED);

@@ -3,6 +3,7 @@ import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -24,7 +25,7 @@ public class RegisterUserRequest { private int userId;
     @NonNull
     @NotBlank
     private  String phoneNo;
-    private double initialDeposit;
+    private BigDecimal initialDeposit;
     private String password;
 
 

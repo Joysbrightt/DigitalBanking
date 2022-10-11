@@ -8,6 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountLoginResponse {
-    boolean success;
+    boolean isSuccess;
+    int statusCode;
+    String message;
     String accessToken;
 }
